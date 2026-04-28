@@ -1,15 +1,75 @@
-const cardImages = [
-  { src: "assets/cards/card-1.jpeg?v=20260428-refresh-2", label: "写真1" },
-  { src: "assets/cards/card-2.png?v=20260428-refresh-2", label: "写真2" },
-  { src: "assets/cards/card-3.jpeg?v=20260428-refresh-2", label: "写真3" },
-  { src: "assets/cards/card-4.png?v=20260428-refresh-2", label: "写真4" },
-  { src: "assets/cards/card-5.png?v=20260428-refresh-2", label: "写真5" },
-  { src: "assets/cards/card-6.png?v=20260428-refresh-2", label: "写真6" },
-  { src: "assets/cards/card-7.png?v=20260428-refresh-2", label: "写真7" },
-  { src: "assets/cards/card-8.png?v=20260428-refresh-2", label: "写真8" },
-];
+const assetVersion = "20260428-stages-1";
+const finalImage = `assets/stages/final.jpg?v=${assetVersion}`;
 
+const stages = [
+  {
+    title: "Stage 1",
+    images: [
+      "assets/stages/stage-1/card-1.png",
+      "assets/stages/stage-1/card-2.png",
+      "assets/stages/stage-1/card-3.png",
+      "assets/stages/stage-1/card-4.png",
+      "assets/stages/stage-1/card-5.png",
+      "assets/stages/stage-1/card-6.png",
+      "assets/stages/stage-1/card-7.png",
+      "assets/stages/stage-1/card-8.png",
+    ],
+  },
+  {
+    title: "Stage 2",
+    images: [
+      "assets/stages/stage-2/card-1.png",
+      "assets/stages/stage-2/card-2.png",
+      "assets/stages/stage-2/card-3.jpeg",
+      "assets/stages/stage-2/card-4.jpeg",
+      "assets/stages/stage-2/card-5.png",
+      "assets/stages/stage-2/card-6.png",
+      "assets/stages/stage-2/card-7.png",
+      "assets/stages/stage-2/card-8.jpg",
+    ],
+  },
+  {
+    title: "Stage 3",
+    images: [
+      "assets/stages/stage-3/card-1.png",
+      "assets/stages/stage-3/card-2.png",
+      "assets/stages/stage-3/card-3.png",
+      "assets/stages/stage-3/card-4.png",
+      "assets/stages/stage-3/card-5.png",
+      "assets/stages/stage-3/card-6.png",
+      "assets/stages/stage-3/card-7.png",
+      "assets/stages/stage-3/card-8.png",
+    ],
+  },
+  {
+    title: "Stage 4",
+    images: [
+      "assets/stages/stage-4/card-1.png",
+      "assets/stages/stage-4/card-2.png",
+      "assets/stages/stage-4/card-3.png",
+      "assets/stages/stage-4/card-4.png",
+      "assets/stages/stage-4/card-5.png",
+      "assets/stages/stage-4/card-6.webp",
+      "assets/stages/stage-4/card-7.png",
+      "assets/stages/stage-4/card-8.png",
+    ],
+  },
+].map((stage) => ({
+  ...stage,
+  images: stage.images.map((src, index) => ({
+    src: `${src}?v=${assetVersion}`,
+    label: `${stage.title} 写真${index + 1}`,
+  })),
+}));
+
+const stageView = document.querySelector("#stageView");
+const gameView = document.querySelector("#gameView");
+const stagePuzzle = document.querySelector("#stagePuzzle");
+const stageList = document.querySelector("#stageList");
+const stageProgressText = document.querySelector("#stageProgressText");
+const resetProgressButton = document.querySelector("#resetProgressButton");
 const board = document.querySelector("#board");
+const stageNumberEl = document.querySelector("#stageNumber");
 const movesEl = document.querySelector("#moves");
 const matchesEl = document.querySelector("#matches");
 const timerEl = document.querySelector("#timer");
@@ -21,6 +81,7 @@ const galleryCount = document.querySelector("#galleryCount");
 const galleryThumbs = document.querySelector("#galleryThumbs");
 const prevImageButton = document.querySelector("#prevImageButton");
 const nextImageButton = document.querySelector("#nextImageButton");
+const homeButton = document.querySelector("#homeButton");
 const soundButton = document.querySelector("#soundButton");
 const soundIcon = document.querySelector("#soundIcon");
 const soundState = document.querySelector("#soundState");
@@ -30,7 +91,11 @@ const pauseOverlay = document.querySelector("#pauseOverlay");
 const resumeButton = document.querySelector("#resumeButton");
 const restartButton = document.querySelector("#restartButton");
 const playAgainButton = document.querySelector("#playAgainButton");
+const stageSelectButton = document.querySelector("#stageSelectButton");
 
+let currentStageIndex = 0;
+let completedStages = loadCompletedStages();
+let newlyCompletedStage = null;
 let firstCard = null;
 let secondCard = null;
 let lockBoard = false;
@@ -46,6 +111,23 @@ let audioContext = null;
 let masterGain = null;
 let bgmTimerId = null;
 let soundEnabled = false;
+
+function loadCompletedStages() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("memoryMatchCompletedStages") || "[]");
+    return new Set(saved.filter((index) => Number.isInteger(index)));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveCompletedStages() {
+  localStorage.setItem("memoryMatchCompletedStages", JSON.stringify([...completedStages]));
+}
+
+function getStageImages() {
+  return stages[currentStageIndex].images;
+}
 
 function getAudioContext() {
   if (!audioContext) {
@@ -102,6 +184,12 @@ function playMismatchSound() {
 function playClearSound() {
   [523, 659, 784, 1047].forEach((frequency, index) => {
     setTimeout(() => playTone(frequency, 0.22, { type: "triangle", volume: 0.28 }), index * 120);
+  });
+}
+
+function playCompleteSound() {
+  [392, 523, 659, 784, 1047].forEach((frequency, index) => {
+    setTimeout(() => playTone(frequency, 0.22, { type: "triangle", volume: 0.3 }), index * 110);
   });
 }
 
@@ -237,16 +325,107 @@ function togglePause() {
 }
 
 function updateStats() {
+  stageNumberEl.textContent = currentStageIndex + 1;
   movesEl.textContent = moves;
   matchesEl.textContent = matches;
 }
 
+function setGameControlsEnabled(isEnabled) {
+  homeButton.hidden = !isEnabled;
+  pauseButton.disabled = !isEnabled || !gameStarted;
+  restartButton.disabled = !isEnabled;
+}
+
+function renderStageSelection() {
+  const completedCount = completedStages.size;
+  const isAllComplete = completedCount === stages.length;
+  stageProgressText.textContent = isAllComplete
+    ? "すべてのパネルが開きました。完成画像ができあがりました。"
+    : `${completedCount} / ${stages.length} ステージクリア`;
+
+  stagePuzzle.replaceChildren(
+    ...stages.map((stage, index) => {
+      const tile = document.createElement("button");
+      tile.className = "stage-tile";
+      tile.type = "button";
+      tile.style.setProperty("--tile-bg", `url("${finalImage}")`);
+      tile.style.setProperty("--tile-position", getTilePosition(index));
+      tile.setAttribute("aria-label", `${stage.title}を開始`);
+
+      if (completedStages.has(index)) {
+        tile.classList.add("is-complete");
+      }
+
+      if (newlyCompletedStage === index) {
+        tile.classList.add("is-newly-complete");
+      }
+
+      tile.innerHTML = `
+        <span class="stage-tile-inner">
+          <span class="stage-tile-face stage-tile-front">
+            <span>${stage.title}</span>
+          </span>
+          <span class="stage-tile-face stage-tile-back"></span>
+        </span>
+      `;
+      tile.addEventListener("click", () => startStage(index));
+      return tile;
+    }),
+  );
+
+  stageList.replaceChildren(
+    ...stages.map((stage, index) => {
+      const button = document.createElement("button");
+      button.className = "stage-list-button";
+      button.type = "button";
+      button.innerHTML = `
+        <span>${stage.title}</span>
+        <strong>${completedStages.has(index) ? "CLEAR" : "PLAY"}</strong>
+      `;
+      button.addEventListener("click", () => startStage(index));
+      return button;
+    }),
+  );
+}
+
+function getTilePosition(index) {
+  const positions = ["0% 0%", "100% 0%", "0% 100%", "100% 100%"];
+  return positions[index];
+}
+
+function showStageSelection() {
+  stopTimer();
+  stopBgm();
+  firstCard = null;
+  secondCard = null;
+  lockBoard = false;
+  gameStarted = false;
+  isPaused = false;
+  result.hidden = true;
+  result.classList.remove("is-celebrating");
+  pauseOverlay.hidden = true;
+  confetti.replaceChildren();
+  setGameControlsEnabled(false);
+  updatePauseButton();
+  renderStageSelection();
+  stageView.hidden = false;
+  gameView.hidden = true;
+
+  if (newlyCompletedStage !== null) {
+    setTimeout(() => {
+      newlyCompletedStage = null;
+      renderStageSelection();
+    }, 1100);
+  }
+}
+
 function showGalleryImage(index) {
-  galleryIndex = (index + cardImages.length) % cardImages.length;
-  const image = cardImages[galleryIndex];
+  const images = getStageImages();
+  galleryIndex = (index + images.length) % images.length;
+  const image = images[galleryIndex];
   galleryImage.src = image.src;
   galleryImage.alt = image.label;
-  galleryCount.textContent = `${galleryIndex + 1} / ${cardImages.length}`;
+  galleryCount.textContent = `${galleryIndex + 1} / ${images.length}`;
 
   [...galleryThumbs.children].forEach((thumb, thumbIndex) => {
     thumb.classList.toggle("is-active", thumbIndex === galleryIndex);
@@ -254,8 +433,9 @@ function showGalleryImage(index) {
 }
 
 function buildGallery() {
+  const images = getStageImages();
   galleryThumbs.replaceChildren(
-    ...cardImages.map((image, index) => {
+    ...images.map((image, index) => {
       const button = document.createElement("button");
       button.className = "gallery-thumb";
       button.type = "button";
@@ -335,7 +515,7 @@ function handleMatch() {
   updateStats();
   resetSelection();
 
-  if (matches === cardImages.length) {
+  if (matches === getStageImages().length) {
     finishGame();
   }
 }
@@ -346,6 +526,7 @@ function flipCard(card) {
   }
 
   startTimer();
+  setGameControlsEnabled(true);
   startBgm();
   playFlipSound();
   card.classList.add("is-flipped");
@@ -372,16 +553,25 @@ function finishGame() {
   stopTimer();
   stopBgm();
   pauseButton.disabled = true;
+  completedStages.add(currentStageIndex);
+  newlyCompletedStage = currentStageIndex;
+  saveCompletedStages();
   playClearSound();
+
+  if (completedStages.size === stages.length) {
+    setTimeout(playCompleteSound, 480);
+  }
+
   const elapsed = timerEl.textContent;
-  resultText.textContent = `${moves}手、${elapsed}で全ペアを見つけました。`;
+  resultText.textContent = `${stages[currentStageIndex].title}を${moves}手、${elapsed}でクリアしました。`;
   buildGallery();
   result.hidden = false;
   result.classList.add("is-celebrating");
   launchConfetti();
 }
 
-function newGame() {
+function startStage(index) {
+  currentStageIndex = index;
   stopTimer();
   stopBgm();
   firstCard = null;
@@ -398,16 +588,29 @@ function newGame() {
   result.classList.remove("is-celebrating");
   confetti.replaceChildren();
   pauseOverlay.hidden = true;
-  pauseButton.disabled = true;
   updatePauseButton();
   updateStats();
+  setGameControlsEnabled(true);
+  pauseButton.disabled = true;
+  stageView.hidden = true;
+  gameView.hidden = false;
 
-  const deck = shuffle([...cardImages, ...cardImages]);
+  const deck = shuffle([...getStageImages(), ...getStageImages()]);
   board.replaceChildren(...deck.map(createCard));
 }
 
-restartButton.addEventListener("click", newGame);
-playAgainButton.addEventListener("click", newGame);
+function resetProgress() {
+  completedStages = new Set();
+  newlyCompletedStage = null;
+  saveCompletedStages();
+  renderStageSelection();
+}
+
+homeButton.addEventListener("click", showStageSelection);
+restartButton.addEventListener("click", () => startStage(currentStageIndex));
+playAgainButton.addEventListener("click", () => startStage(currentStageIndex));
+stageSelectButton.addEventListener("click", showStageSelection);
+resetProgressButton.addEventListener("click", resetProgress);
 soundButton.addEventListener("click", toggleSound);
 pauseButton.addEventListener("click", togglePause);
 resumeButton.addEventListener("click", resumeGame);
@@ -415,4 +618,5 @@ prevImageButton.addEventListener("click", () => showGalleryImage(galleryIndex - 
 nextImageButton.addEventListener("click", () => showGalleryImage(galleryIndex + 1));
 
 updateSoundButton();
-newGame();
+setGameControlsEnabled(false);
+showStageSelection();

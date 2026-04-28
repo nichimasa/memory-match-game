@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Memory Match</title>
-    <link rel="stylesheet" href="styles.css?v=20260428-refresh-2" />
+    <link rel="stylesheet" href="styles.css?v=20260428-stages-1" />
   </head>
   <body>
     <main class="game-shell">
@@ -17,6 +17,9 @@
           <h1>神経衰弱</h1>
         </div>
         <div class="toolbar" aria-label="ゲーム操作">
+          <button class="icon-button" id="homeButton" type="button" aria-label="ステージ選択" hidden>
+            <span aria-hidden="true">⌂</span>
+          </button>
           <button class="icon-button sound-button" id="soundButton" type="button" aria-label="音をオン">
             <span aria-hidden="true" id="soundIcon">♪</span>
             <span class="sound-state" id="soundState">OFF</span>
@@ -30,23 +33,41 @@
         </div>
       </section>
 
-      <section class="stats" aria-label="スコア">
-        <div class="stat">
-          <span class="stat-label">手数</span>
-          <strong id="moves">0</strong>
+      <section class="stage-view" id="stageView" aria-label="ステージ選択">
+        <div class="stage-summary">
+          <p class="stage-kicker">4 Stages</p>
+          <h2>全ステージをクリアして完成画像を開こう</h2>
+          <p id="stageProgressText"></p>
         </div>
-        <div class="stat">
-          <span class="stat-label">発見</span>
-          <strong><span id="matches">0</span>/8</strong>
-        </div>
-        <div class="stat">
-          <span class="stat-label">時間</span>
-          <strong id="timer">00:00</strong>
-        </div>
+
+        <div class="stage-puzzle" id="stagePuzzle" aria-label="完成パネル"></div>
+        <div class="stage-list" id="stageList"></div>
+        <button class="secondary-button" id="resetProgressButton" type="button">進行をリセット</button>
       </section>
 
-      <section class="board-wrap" aria-label="カードボード">
-        <div class="board" id="board"></div>
+      <section class="game-view" id="gameView" hidden>
+        <section class="stats" aria-label="スコア">
+          <div class="stat">
+            <span class="stat-label">ステージ</span>
+            <strong id="stageNumber">1</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">手数</span>
+            <strong id="moves">0</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">発見</span>
+            <strong><span id="matches">0</span>/8</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">時間</span>
+            <strong id="timer">00:00</strong>
+          </div>
+        </section>
+
+        <section class="board-wrap" aria-label="カードボード">
+          <div class="board" id="board"></div>
+        </section>
       </section>
 
       <section class="result" id="result" aria-live="polite" hidden>
@@ -65,7 +86,10 @@
           <p class="gallery-count" id="galleryCount"></p>
           <div class="gallery-thumbs" id="galleryThumbs"></div>
         </div>
-        <button class="primary-button" id="playAgainButton" type="button">もう一度</button>
+        <div class="result-actions">
+          <button class="primary-button" id="stageSelectButton" type="button">ステージ選択へ</button>
+          <button class="secondary-button" id="playAgainButton" type="button">もう一度</button>
+        </div>
       </section>
 
       <section class="pause-overlay" id="pauseOverlay" aria-live="polite" hidden>
@@ -74,6 +98,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260428-refresh-2"></script>
+    <script src="script.js?v=20260428-stages-1"></script>
   </body>
 </html>
