@@ -6,6 +6,8 @@ const matchesEl = document.querySelector("#matches");
 const timerEl = document.querySelector("#timer");
 const result = document.querySelector("#result");
 const resultText = document.querySelector("#resultText");
+const soundButton = document.querySelector("#soundButton");
+const soundIcon = document.querySelector("#soundIcon");
 const restartButton = document.querySelector("#restartButton");
 const playAgainButton = document.querySelector("#playAgainButton");
 
@@ -16,6 +18,112 @@ let moves = 0;
 let matches = 0;
 let startedAt = null;
 let timerId = null;
+let audioContext = null;
+let masterGain = null;
+let bgmTimerId = null;
+let soundEnabled = true;
+
+function getAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioContext.createGain();
+    masterGain.gain.value = 0.28;
+    masterGain.connect(audioContext.destination);
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+
+  return audioContext;
+}
+
+function playTone(frequency, duration, options = {}) {
+  if (!soundEnabled) {
+    return;
+  }
+
+  const context = getAudioContext();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  const now = context.currentTime;
+  const volume = options.volume ?? 0.45;
+
+  oscillator.type = options.type ?? "sine";
+  oscillator.frequency.setValueAtTime(frequency, now);
+  oscillator.frequency.exponentialRampToValueAtTime(options.endFrequency ?? frequency, now + duration);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  oscillator.connect(gain);
+  gain.connect(masterGain);
+  oscillator.start(now);
+  oscillator.stop(now + duration + 0.02);
+}
+
+function playFlipSound() {
+  playTone(520, 0.08, { endFrequency: 700, type: "triangle", volume: 0.24 });
+}
+
+function playMatchSound() {
+  playTone(660, 0.12, { type: "triangle", volume: 0.26 });
+  setTimeout(() => playTone(880, 0.16, { type: "triangle", volume: 0.24 }), 90);
+}
+
+function playMismatchSound() {
+  playTone(220, 0.16, { endFrequency: 150, type: "sawtooth", volume: 0.16 });
+}
+
+function playClearSound() {
+  [523, 659, 784, 1047].forEach((frequency, index) => {
+    setTimeout(() => playTone(frequency, 0.22, { type: "triangle", volume: 0.28 }), index * 120);
+  });
+}
+
+function playBgmStep() {
+  const notes = [262, 330, 392, 330, 294, 349, 440, 349];
+  const note = notes[Math.floor(Date.now() / 850) % notes.length];
+  playTone(note, 0.32, { type: "sine", volume: 0.055 });
+}
+
+function startBgm() {
+  if (!soundEnabled || bgmTimerId) {
+    return;
+  }
+
+  playBgmStep();
+  bgmTimerId = setInterval(playBgmStep, 850);
+}
+
+function stopBgm() {
+  clearInterval(bgmTimerId);
+  bgmTimerId = null;
+}
+
+function updateSoundButton() {
+  soundButton.classList.toggle("is-muted", !soundEnabled);
+  soundButton.setAttribute("aria-label", soundEnabled ? "音をミュート" : "音をオン");
+  soundIcon.textContent = soundEnabled ? "♪" : "×";
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  updateSoundButton();
+
+  if (soundEnabled) {
+    getAudioContext();
+    playTone(740, 0.1, { type: "triangle", volume: 0.2 });
+    if (startedAt && !result.hidden) {
+      return;
+    }
+    if (startedAt) {
+      startBgm();
+    }
+  } else {
+    stopBgm();
+  }
+}
 
 function shuffle(items) {
   const copied = [...items];
@@ -82,6 +190,7 @@ function resetSelection() {
 
 function handleMismatch() {
   lockBoard = true;
+  playMismatchSound();
 
   setTimeout(() => {
     firstCard.classList.remove("is-flipped");
@@ -96,6 +205,7 @@ function handleMatch() {
   firstCard.disabled = true;
   secondCard.disabled = true;
   matches += 1;
+  playMatchSound();
   updateStats();
   resetSelection();
 
@@ -110,6 +220,8 @@ function flipCard(card) {
   }
 
   startTimer();
+  startBgm();
+  playFlipSound();
   card.classList.add("is-flipped");
 
   if (!firstCard) {
@@ -130,6 +242,8 @@ function flipCard(card) {
 
 function finishGame() {
   stopTimer();
+  stopBgm();
+  playClearSound();
   const elapsed = timerEl.textContent;
   resultText.textContent = `${moves}手、${elapsed}で全ペアを見つけました。`;
   result.hidden = false;
@@ -137,6 +251,7 @@ function finishGame() {
 
 function newGame() {
   stopTimer();
+  stopBgm();
   firstCard = null;
   secondCard = null;
   lockBoard = false;
@@ -153,5 +268,7 @@ function newGame() {
 
 restartButton.addEventListener("click", newGame);
 playAgainButton.addEventListener("click", newGame);
+soundButton.addEventListener("click", toggleSound);
 
+updateSoundButton();
 newGame();

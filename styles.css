@@ -57,6 +57,12 @@ button {
   margin-bottom: 18px;
 }
 
+.toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: var(--accent);
@@ -93,6 +99,11 @@ h1 {
   box-shadow: 0 10px 22px rgba(34, 124, 111, 0.22);
   font-size: 1.8rem;
   line-height: 1;
+}
+
+.icon-button.is-muted {
+  background: #6b7280;
+  box-shadow: 0 10px 22px rgba(54, 63, 75, 0.18);
 }
 
 .icon-button:hover,
