@@ -1,12 +1,12 @@
 const cardImages = [
-  { src: "assets/cards/card-1.jpeg?v=20260428-new-cards-pause", label: "写真1" },
-  { src: "assets/cards/card-2.png?v=20260428-new-cards-pause", label: "写真2" },
-  { src: "assets/cards/card-3.jpeg?v=20260428-new-cards-pause", label: "写真3" },
-  { src: "assets/cards/card-4.png?v=20260428-new-cards-pause", label: "写真4" },
-  { src: "assets/cards/card-5.png?v=20260428-new-cards-pause", label: "写真5" },
-  { src: "assets/cards/card-6.png?v=20260428-new-cards-pause", label: "写真6" },
-  { src: "assets/cards/card-7.png?v=20260428-new-cards-pause", label: "写真7" },
-  { src: "assets/cards/card-8.png?v=20260428-new-cards-pause", label: "写真8" },
+  { src: "assets/cards/card-1.jpeg?v=20260428-refresh-2", label: "写真1" },
+  { src: "assets/cards/card-2.png?v=20260428-refresh-2", label: "写真2" },
+  { src: "assets/cards/card-3.jpeg?v=20260428-refresh-2", label: "写真3" },
+  { src: "assets/cards/card-4.png?v=20260428-refresh-2", label: "写真4" },
+  { src: "assets/cards/card-5.png?v=20260428-refresh-2", label: "写真5" },
+  { src: "assets/cards/card-6.png?v=20260428-refresh-2", label: "写真6" },
+  { src: "assets/cards/card-7.png?v=20260428-refresh-2", label: "写真7" },
+  { src: "assets/cards/card-8.png?v=20260428-refresh-2", label: "写真8" },
 ];
 
 const board = document.querySelector("#board");
