@@ -1,12 +1,12 @@
 const cardImages = [
-  { src: "assets/cards/card-1.jpg", label: "写真1" },
-  { src: "assets/cards/card-2.jpg", label: "写真2" },
-  { src: "assets/cards/card-3.jpg", label: "写真3" },
-  { src: "assets/cards/card-4.jpg", label: "写真4" },
-  { src: "assets/cards/card-5.jpg", label: "写真5" },
-  { src: "assets/cards/card-6.jpg", label: "写真6" },
-  { src: "assets/cards/card-7.jpg", label: "写真7" },
-  { src: "assets/cards/card-8.jpg", label: "写真8" },
+  { src: "assets/cards/card-1.jpg?v=20260428-photo-cards", label: "写真1" },
+  { src: "assets/cards/card-2.jpg?v=20260428-photo-cards", label: "写真2" },
+  { src: "assets/cards/card-3.jpg?v=20260428-photo-cards", label: "写真3" },
+  { src: "assets/cards/card-4.jpg?v=20260428-photo-cards", label: "写真4" },
+  { src: "assets/cards/card-5.jpg?v=20260428-photo-cards", label: "写真5" },
+  { src: "assets/cards/card-6.jpg?v=20260428-photo-cards", label: "写真6" },
+  { src: "assets/cards/card-7.jpg?v=20260428-photo-cards", label: "写真7" },
+  { src: "assets/cards/card-8.jpg?v=20260428-photo-cards", label: "写真8" },
 ];
 
 const board = document.querySelector("#board");
