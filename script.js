@@ -15,6 +15,12 @@ const matchesEl = document.querySelector("#matches");
 const timerEl = document.querySelector("#timer");
 const result = document.querySelector("#result");
 const resultText = document.querySelector("#resultText");
+const confetti = document.querySelector("#confetti");
+const galleryImage = document.querySelector("#galleryImage");
+const galleryCount = document.querySelector("#galleryCount");
+const galleryThumbs = document.querySelector("#galleryThumbs");
+const prevImageButton = document.querySelector("#prevImageButton");
+const nextImageButton = document.querySelector("#nextImageButton");
 const soundButton = document.querySelector("#soundButton");
 const soundIcon = document.querySelector("#soundIcon");
 const soundState = document.querySelector("#soundState");
@@ -35,6 +41,7 @@ let timerId = null;
 let elapsedBeforePause = 0;
 let gameStarted = false;
 let isPaused = false;
+let galleryIndex = 0;
 let audioContext = null;
 let masterGain = null;
 let bgmTimerId = null;
@@ -234,6 +241,49 @@ function updateStats() {
   matchesEl.textContent = matches;
 }
 
+function showGalleryImage(index) {
+  galleryIndex = (index + cardImages.length) % cardImages.length;
+  const image = cardImages[galleryIndex];
+  galleryImage.src = image.src;
+  galleryImage.alt = image.label;
+  galleryCount.textContent = `${galleryIndex + 1} / ${cardImages.length}`;
+
+  [...galleryThumbs.children].forEach((thumb, thumbIndex) => {
+    thumb.classList.toggle("is-active", thumbIndex === galleryIndex);
+  });
+}
+
+function buildGallery() {
+  galleryThumbs.replaceChildren(
+    ...cardImages.map((image, index) => {
+      const button = document.createElement("button");
+      button.className = "gallery-thumb";
+      button.type = "button";
+      button.setAttribute("aria-label", `${image.label}を表示`);
+      button.innerHTML = `<img src="${image.src}" alt="${image.label}" />`;
+      button.addEventListener("click", () => showGalleryImage(index));
+      return button;
+    }),
+  );
+
+  showGalleryImage(0);
+}
+
+function launchConfetti() {
+  const colors = ["#e0a832", "#227c6f", "#274c77", "#d94f70", "#f4f1ea"];
+  const pieces = Array.from({ length: 64 }, (_, index) => {
+    const piece = document.createElement("span");
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[index % colors.length];
+    piece.style.animationDelay = `${Math.random() * 0.45}s`;
+    piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+    return piece;
+  });
+
+  confetti.replaceChildren(...pieces);
+  setTimeout(() => confetti.replaceChildren(), 2300);
+}
+
 function createCard(image, index) {
   const card = document.createElement("button");
   card.className = "card";
@@ -318,13 +368,17 @@ function flipCard(card) {
 
 function finishGame() {
   elapsedBeforePause = getElapsedSeconds();
+  renderTimer();
   stopTimer();
   stopBgm();
   pauseButton.disabled = true;
   playClearSound();
   const elapsed = timerEl.textContent;
   resultText.textContent = `${moves}手、${elapsed}で全ペアを見つけました。`;
+  buildGallery();
   result.hidden = false;
+  result.classList.add("is-celebrating");
+  launchConfetti();
 }
 
 function newGame() {
@@ -341,6 +395,8 @@ function newGame() {
   startedAt = null;
   timerEl.textContent = "00:00";
   result.hidden = true;
+  result.classList.remove("is-celebrating");
+  confetti.replaceChildren();
   pauseOverlay.hidden = true;
   pauseButton.disabled = true;
   updatePauseButton();
@@ -355,6 +411,8 @@ playAgainButton.addEventListener("click", newGame);
 soundButton.addEventListener("click", toggleSound);
 pauseButton.addEventListener("click", togglePause);
 resumeButton.addEventListener("click", resumeGame);
+prevImageButton.addEventListener("click", () => showGalleryImage(galleryIndex - 1));
+nextImageButton.addEventListener("click", () => showGalleryImage(galleryIndex + 1));
 
 updateSoundButton();
 newGame();

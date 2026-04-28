@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Memory Match</title>
-    <link rel="stylesheet" href="styles.css?v=20260428-new-cards-pause" />
+    <link rel="stylesheet" href="styles.css?v=20260428-gallery-clear" />
   </head>
   <body>
     <main class="game-shell">
@@ -47,8 +47,21 @@
       </section>
 
       <section class="result" id="result" aria-live="polite" hidden>
-        <p class="result-title">クリア！</p>
-        <p id="resultText"></p>
+        <div class="confetti" id="confetti" aria-hidden="true"></div>
+        <div class="result-header">
+          <p class="result-kicker">Perfect Match</p>
+          <p class="result-title">クリア！</p>
+          <p id="resultText"></p>
+        </div>
+        <div class="gallery" aria-label="使用した画像">
+          <div class="gallery-stage">
+            <button class="gallery-nav" id="prevImageButton" type="button" aria-label="前の画像">‹</button>
+            <img id="galleryImage" src="" alt="使用した画像" />
+            <button class="gallery-nav" id="nextImageButton" type="button" aria-label="次の画像">›</button>
+          </div>
+          <p class="gallery-count" id="galleryCount"></p>
+          <div class="gallery-thumbs" id="galleryThumbs"></div>
+        </div>
         <button class="primary-button" id="playAgainButton" type="button">もう一度</button>
       </section>
 
@@ -58,6 +71,6 @@
       </section>
     </main>
 
-    <script src="script.js?v=20260428-new-cards-pause"></script>
+    <script src="script.js?v=20260428-gallery-clear"></script>
   </body>
 </html>
