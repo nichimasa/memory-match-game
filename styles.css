@@ -88,6 +88,12 @@ h1 {
     box-shadow 160ms ease;
 }
 
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
+}
+
 .icon-button {
   width: 48px;
   height: 48px;
@@ -262,13 +268,35 @@ h1 {
   box-shadow: var(--shadow);
 }
 
-.result[hidden] {
+.pause-overlay {
+  position: absolute;
+  inset: 24px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 16px;
+  padding: 28px;
+  border: 1px solid rgba(23, 32, 27, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 253, 247, 0.9);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.result[hidden],
+.pause-overlay[hidden] {
   display: none;
 }
 
 .result-title {
   margin: 0;
   font-size: clamp(2rem, 8vw, 4rem);
+  font-weight: 900;
+}
+
+.pause-title {
+  margin: 0;
+  font-size: clamp(1.8rem, 7vw, 3.6rem);
   font-weight: 900;
 }
 
@@ -311,6 +339,10 @@ h1 {
   }
 
   .result {
+    inset: 16px;
+  }
+
+  .pause-overlay {
     inset: 16px;
   }
 }

@@ -1,12 +1,12 @@
 const cardImages = [
-  { src: "assets/cards/card-1.jpg?v=20260428-photo-cards", label: "写真1" },
-  { src: "assets/cards/card-2.jpg?v=20260428-photo-cards", label: "写真2" },
-  { src: "assets/cards/card-3.jpg?v=20260428-photo-cards", label: "写真3" },
-  { src: "assets/cards/card-4.jpg?v=20260428-photo-cards", label: "写真4" },
-  { src: "assets/cards/card-5.jpg?v=20260428-photo-cards", label: "写真5" },
-  { src: "assets/cards/card-6.jpg?v=20260428-photo-cards", label: "写真6" },
-  { src: "assets/cards/card-7.jpg?v=20260428-photo-cards", label: "写真7" },
-  { src: "assets/cards/card-8.jpg?v=20260428-photo-cards", label: "写真8" },
+  { src: "assets/cards/card-1.jpeg?v=20260428-new-cards-pause", label: "写真1" },
+  { src: "assets/cards/card-2.png?v=20260428-new-cards-pause", label: "写真2" },
+  { src: "assets/cards/card-3.jpeg?v=20260428-new-cards-pause", label: "写真3" },
+  { src: "assets/cards/card-4.png?v=20260428-new-cards-pause", label: "写真4" },
+  { src: "assets/cards/card-5.png?v=20260428-new-cards-pause", label: "写真5" },
+  { src: "assets/cards/card-6.png?v=20260428-new-cards-pause", label: "写真6" },
+  { src: "assets/cards/card-7.png?v=20260428-new-cards-pause", label: "写真7" },
+  { src: "assets/cards/card-8.png?v=20260428-new-cards-pause", label: "写真8" },
 ];
 
 const board = document.querySelector("#board");
@@ -18,6 +18,10 @@ const resultText = document.querySelector("#resultText");
 const soundButton = document.querySelector("#soundButton");
 const soundIcon = document.querySelector("#soundIcon");
 const soundState = document.querySelector("#soundState");
+const pauseButton = document.querySelector("#pauseButton");
+const pauseIcon = document.querySelector("#pauseIcon");
+const pauseOverlay = document.querySelector("#pauseOverlay");
+const resumeButton = document.querySelector("#resumeButton");
 const restartButton = document.querySelector("#restartButton");
 const playAgainButton = document.querySelector("#playAgainButton");
 
@@ -28,6 +32,9 @@ let moves = 0;
 let matches = 0;
 let startedAt = null;
 let timerId = null;
+let elapsedBeforePause = 0;
+let gameStarted = false;
+let isPaused = false;
 let audioContext = null;
 let masterGain = null;
 let bgmTimerId = null;
@@ -125,7 +132,7 @@ function toggleSound() {
     playTone(740, 0.1, { type: "triangle", volume: 0.2 });
     updateSoundButton();
 
-    if (startedAt) {
+    if (gameStarted && !isPaused && result.hidden) {
       startBgm();
     }
   } else {
@@ -153,21 +160,73 @@ function formatTime(totalSeconds) {
   return `${minutes}:${seconds}`;
 }
 
+function getElapsedSeconds() {
+  if (!startedAt) {
+    return elapsedBeforePause;
+  }
+
+  return elapsedBeforePause + Math.floor((Date.now() - startedAt) / 1000);
+}
+
+function renderTimer() {
+  timerEl.textContent = formatTime(getElapsedSeconds());
+}
+
 function startTimer() {
   if (timerId) {
     return;
   }
 
+  gameStarted = true;
   startedAt = Date.now();
-  timerId = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-    timerEl.textContent = formatTime(elapsed);
-  }, 1000);
+  pauseButton.disabled = false;
+  timerId = setInterval(renderTimer, 1000);
 }
 
 function stopTimer() {
   clearInterval(timerId);
   timerId = null;
+  startedAt = null;
+}
+
+function updatePauseButton() {
+  pauseButton.setAttribute("aria-label", isPaused ? "再開" : "一時停止");
+  pauseIcon.textContent = isPaused ? "▶" : "Ⅱ";
+}
+
+function pauseGame() {
+  if (!gameStarted || isPaused || lockBoard || !result.hidden) {
+    return;
+  }
+
+  elapsedBeforePause = getElapsedSeconds();
+  stopTimer();
+  stopBgm();
+  isPaused = true;
+  lockBoard = true;
+  pauseOverlay.hidden = false;
+  updatePauseButton();
+}
+
+function resumeGame() {
+  if (!isPaused) {
+    return;
+  }
+
+  isPaused = false;
+  lockBoard = false;
+  pauseOverlay.hidden = true;
+  updatePauseButton();
+  startTimer();
+  startBgm();
+}
+
+function togglePause() {
+  if (isPaused) {
+    resumeGame();
+  } else {
+    pauseGame();
+  }
 }
 
 function updateStats() {
@@ -206,6 +265,10 @@ function handleMismatch() {
   playMismatchSound();
 
   setTimeout(() => {
+    if (isPaused) {
+      return;
+    }
+
     firstCard.classList.remove("is-flipped");
     secondCard.classList.remove("is-flipped");
     resetSelection();
@@ -228,7 +291,7 @@ function handleMatch() {
 }
 
 function flipCard(card) {
-  if (lockBoard || card === firstCard || card.classList.contains("is-matched")) {
+  if (isPaused || lockBoard || card === firstCard || card.classList.contains("is-matched")) {
     return;
   }
 
@@ -254,8 +317,10 @@ function flipCard(card) {
 }
 
 function finishGame() {
+  elapsedBeforePause = getElapsedSeconds();
   stopTimer();
   stopBgm();
+  pauseButton.disabled = true;
   playClearSound();
   const elapsed = timerEl.textContent;
   resultText.textContent = `${moves}手、${elapsed}で全ペアを見つけました。`;
@@ -270,9 +335,15 @@ function newGame() {
   lockBoard = false;
   moves = 0;
   matches = 0;
+  elapsedBeforePause = 0;
+  gameStarted = false;
+  isPaused = false;
   startedAt = null;
   timerEl.textContent = "00:00";
   result.hidden = true;
+  pauseOverlay.hidden = true;
+  pauseButton.disabled = true;
+  updatePauseButton();
   updateStats();
 
   const deck = shuffle([...cardImages, ...cardImages]);
@@ -282,6 +353,8 @@ function newGame() {
 restartButton.addEventListener("click", newGame);
 playAgainButton.addEventListener("click", newGame);
 soundButton.addEventListener("click", toggleSound);
+pauseButton.addEventListener("click", togglePause);
+resumeButton.addEventListener("click", resumeGame);
 
 updateSoundButton();
 newGame();

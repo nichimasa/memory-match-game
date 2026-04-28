@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Memory Match</title>
-    <link rel="stylesheet" href="styles.css?v=20260428-photo-cards" />
+    <link rel="stylesheet" href="styles.css?v=20260428-new-cards-pause" />
   </head>
   <body>
     <main class="game-shell">
@@ -17,6 +17,9 @@
           <button class="icon-button sound-button" id="soundButton" type="button" aria-label="音をオン">
             <span aria-hidden="true" id="soundIcon">♪</span>
             <span class="sound-state" id="soundState">OFF</span>
+          </button>
+          <button class="icon-button" id="pauseButton" type="button" aria-label="一時停止" disabled>
+            <span aria-hidden="true" id="pauseIcon">Ⅱ</span>
           </button>
           <button class="icon-button" id="restartButton" type="button" aria-label="リスタート">
             <span aria-hidden="true">↻</span>
@@ -48,8 +51,13 @@
         <p id="resultText"></p>
         <button class="primary-button" id="playAgainButton" type="button">もう一度</button>
       </section>
+
+      <section class="pause-overlay" id="pauseOverlay" aria-live="polite" hidden>
+        <p class="pause-title">一時停止中</p>
+        <button class="primary-button" id="resumeButton" type="button">再開</button>
+      </section>
     </main>
 
-    <script src="script.js?v=20260428-photo-cards"></script>
+    <script src="script.js?v=20260428-new-cards-pause"></script>
   </body>
 </html>
