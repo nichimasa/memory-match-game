@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Match</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <section class="topbar" aria-label="ゲーム情報">
+        <div>
+          <p class="eyebrow">Memory Match</p>
+          <h1>神経衰弱</h1>
+        </div>
+        <button class="icon-button" id="restartButton" type="button" aria-label="リスタート">
+          <span aria-hidden="true">↻</span>
+        </button>
+      </section>
+
+      <section class="stats" aria-label="スコア">
+        <div class="stat">
+          <span class="stat-label">手数</span>
+          <strong id="moves">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">発見</span>
+          <strong><span id="matches">0</span>/8</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">時間</span>
+          <strong id="timer">00:00</strong>
+        </div>
+      </section>
+
+      <section class="board-wrap" aria-label="カードボード">
+        <div class="board" id="board"></div>
+      </section>
+
+      <section class="result" id="result" aria-live="polite" hidden>
+        <p class="result-title">クリア！</p>
+        <p id="resultText"></p>
+        <button class="primary-button" id="playAgainButton" type="button">もう一度</button>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
