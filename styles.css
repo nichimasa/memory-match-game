@@ -101,6 +101,26 @@ h1 {
   line-height: 1;
 }
 
+.sound-button {
+  width: 64px;
+  grid-template-rows: 1fr auto;
+  gap: 1px;
+  padding: 4px 0 5px;
+}
+
+.sound-button #soundIcon {
+  align-self: end;
+  font-size: 1.3rem;
+}
+
+.sound-state {
+  align-self: start;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .icon-button.is-muted {
   background: #6b7280;
   box-shadow: 0 10px 22px rgba(54, 63, 75, 0.18);

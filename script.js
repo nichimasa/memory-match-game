@@ -8,6 +8,7 @@ const result = document.querySelector("#result");
 const resultText = document.querySelector("#resultText");
 const soundButton = document.querySelector("#soundButton");
 const soundIcon = document.querySelector("#soundIcon");
+const soundState = document.querySelector("#soundState");
 const restartButton = document.querySelector("#restartButton");
 const playAgainButton = document.querySelector("#playAgainButton");
 
@@ -21,7 +22,7 @@ let timerId = null;
 let audioContext = null;
 let masterGain = null;
 let bgmTimerId = null;
-let soundEnabled = true;
+let soundEnabled = false;
 
 function getAudioContext() {
   if (!audioContext) {
@@ -105,22 +106,23 @@ function updateSoundButton() {
   soundButton.classList.toggle("is-muted", !soundEnabled);
   soundButton.setAttribute("aria-label", soundEnabled ? "音をミュート" : "音をオン");
   soundIcon.textContent = soundEnabled ? "♪" : "×";
+  soundState.textContent = soundEnabled ? "ON" : "OFF";
 }
 
 function toggleSound() {
-  soundEnabled = !soundEnabled;
-  updateSoundButton();
-
-  if (soundEnabled) {
+  if (!soundEnabled) {
+    soundEnabled = true;
     getAudioContext();
     playTone(740, 0.1, { type: "triangle", volume: 0.2 });
-    if (startedAt && !result.hidden) {
-      return;
-    }
+    updateSoundButton();
+
     if (startedAt) {
       startBgm();
     }
   } else {
+    playTone(260, 0.08, { endFrequency: 180, type: "triangle", volume: 0.14 });
+    soundEnabled = false;
+    updateSoundButton();
     stopBgm();
   }
 }
