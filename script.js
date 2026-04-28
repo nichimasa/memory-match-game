@@ -1,4 +1,13 @@
-const symbols = ["🍓", "🍋", "🍇", "🍑", "🥝", "🍒", "🍍", "🫐"];
+const cardImages = [
+  { src: "assets/cards/card-1.jpg", label: "写真1" },
+  { src: "assets/cards/card-2.jpg", label: "写真2" },
+  { src: "assets/cards/card-3.jpg", label: "写真3" },
+  { src: "assets/cards/card-4.jpg", label: "写真4" },
+  { src: "assets/cards/card-5.jpg", label: "写真5" },
+  { src: "assets/cards/card-6.jpg", label: "写真6" },
+  { src: "assets/cards/card-7.jpg", label: "写真7" },
+  { src: "assets/cards/card-8.jpg", label: "写真8" },
+];
 
 const board = document.querySelector("#board");
 const movesEl = document.querySelector("#moves");
@@ -166,17 +175,19 @@ function updateStats() {
   matchesEl.textContent = matches;
 }
 
-function createCard(symbol, index) {
+function createCard(image, index) {
   const card = document.createElement("button");
   card.className = "card";
   card.type = "button";
-  card.dataset.symbol = symbol;
+  card.dataset.symbol = image.src;
   card.setAttribute("aria-label", `${index + 1}枚目のカード`);
 
   card.innerHTML = `
     <span class="card-inner">
       <span class="card-face card-back"></span>
-      <span class="card-face card-front" aria-hidden="true">${symbol}</span>
+      <span class="card-face card-front" aria-hidden="true">
+        <img src="${image.src}" alt="${image.label}" />
+      </span>
     </span>
   `;
 
@@ -211,7 +222,7 @@ function handleMatch() {
   updateStats();
   resetSelection();
 
-  if (matches === symbols.length) {
+  if (matches === cardImages.length) {
     finishGame();
   }
 }
@@ -264,7 +275,7 @@ function newGame() {
   result.hidden = true;
   updateStats();
 
-  const deck = shuffle([...symbols, ...symbols]);
+  const deck = shuffle([...cardImages, ...cardImages]);
   board.replaceChildren(...deck.map(createCard));
 }
 
